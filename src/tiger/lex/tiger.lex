@@ -89,14 +89,14 @@
   R"(\\)" {adjustStr(); string_buf_ += '\\';}
   \\ {adjustStr(); begin(StartCondition__::IGNORE);}
   . {adjustStr(); string_buf_ += matched();}
-  <<EOF>> {adjust(); errormsg_->Error(errormsg_->tok_pos_, "quotation marks mismatch   " + string_buf_);}
+  <<EOF>> {adjust(); errormsg_->Error(errormsg_->tok_pos_, "quotation marks mismatch");}
 }
 
 <IGNORE> {
   \\ {adjustStr(); begin(StartCondition__::STR);}
   [ \n\t\r\f\v] {adjustStr();}
   . {adjust(); errormsg_->Error(errormsg_->tok_pos_, "invalid character in ignore");}
-  <<EOF>> {adjust(); errormsg_->Error(errormsg_->tok_pos_, "ignore marks mismatch   " + string_buf_);}
+  <<EOF>> {adjust(); errormsg_->Error(errormsg_->tok_pos_, "ignore marks mismatch");}
 }
 
  /*
