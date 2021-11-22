@@ -56,7 +56,8 @@
 %type <fundeclist> fundec
 %type <fundec> fundec_one
 
-%left AND OR
+%left OR
+%left AND
 %nonassoc EQ NEQ LT LE GT GE
 %left PLUS MINUS
 %left TIMES DIVIDE
