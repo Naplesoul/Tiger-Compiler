@@ -72,12 +72,22 @@ class Access {
 public:
   /* TODO: Put your lab5 code here */
   
+  virtual tree::Exp *toExp(tree::Exp *fp) const = 0;
   virtual ~Access() = default;
   
 };
 
 class Frame {
   /* TODO: Put your lab5 code here */
+public:
+  temp::Label *name;
+  std::vector<Access *> *formals;
+  int frame_size;
+  int max_arg_num;
+
+  Frame(temp::Label *name, std::vector<bool> *escape_list): name(name), frame_size(0), max_arg_num(0) {}
+  virtual frame::Access *AllocLocal(bool escape) = 0;
+  virtual tree::Stm *ProcEntryExit1(tree::Stm *stm) = 0;
 };
 
 /**
@@ -132,7 +142,8 @@ private:
 };
 
 /* TODO: Put your lab5 code here */
-
+assem::InstrList *ProcEntryExit2(assem::InstrList *body);
+assem::Proc *ProcEntryExit3(frame::Frame *frame, assem::InstrList *body);
 } // namespace frame
 
 #endif
