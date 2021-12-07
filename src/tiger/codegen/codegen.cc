@@ -223,15 +223,27 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     return result;
   
   case tree::MINUS_OP:
-    instr_list.Append(new assem::MoveInstr(
-      "movq `s0, `d0",
-      new temp::TempList(result),
-      new temp::TempList(left_->Munch(instr_list, fs))));
-    
-    instr_list.Append(new assem::OperInstr(
-      "subq `s0, `d0",
-      new temp::TempList(result),
-      new temp::TempList(right_->Munch(instr_list, fs)), nullptr));
+    if (typeid(*right_) == typeid(tree::ConstExp)) {
+      instr_list.Append(new assem::MoveInstr(
+        "movq `s0, `d0",
+        new temp::TempList(result),
+        new temp::TempList(left_->Munch(instr_list, fs))));
+
+      instr_list.Append(new assem::OperInstr(
+        "subq $" + std::to_string(static_cast<tree::ConstExp *>(right_)->consti_) + ", `d0",
+        new temp::TempList(result), nullptr, nullptr));
+        
+    } else {
+      instr_list.Append(new assem::MoveInstr(
+        "movq `s0, `d0",
+        new temp::TempList(result),
+        new temp::TempList(left_->Munch(instr_list, fs))));
+      
+      instr_list.Append(new assem::OperInstr(
+        "subq `s0, `d0",
+        new temp::TempList(result),
+        new temp::TempList(right_->Munch(instr_list, fs)), nullptr));
+    }
 
     return result;
 
