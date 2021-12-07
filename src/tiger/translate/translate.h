@@ -32,11 +32,23 @@ public:
   Level *parent_;
 
   /* TODO: Put your lab5 code here */
+  Level(): frame_(nullptr), parent_(nullptr) {}
+  Level(frame::Frame *_frame_, Level *_parent_): frame_(_frame_), parent_(_parent_) {}
+
+  std::vector<tr::Access *> FormalAccess();
 };
 
 class ProgTr {
 public:
-  /* TODO: Put your lab5 code here */ 
+  // TODO: Put your lab5 code here */
+  ProgTr() {}
+  ProgTr(std::unique_ptr<absyn::AbsynTree> absyn_tree,
+    std::unique_ptr<err::ErrorMsg> errormsg) {
+    absyn_tree_ = std::move(absyn_tree);
+    errormsg_ = std::move(errormsg);
+    tenv_ = std::make_unique<env::TEnv>();
+    venv_ = std::make_unique<env::VEnv>();
+  }
   /**
    * Translate IR tree
    */
