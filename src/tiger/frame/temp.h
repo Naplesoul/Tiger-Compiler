@@ -4,6 +4,7 @@
 #include "tiger/symbol/symbol.h"
 
 #include <list>
+#include <set>
 
 namespace temp {
 
@@ -63,10 +64,15 @@ class TempList {
 public:
   explicit TempList(Temp *t) : temp_list_({t}) {}
   TempList(std::initializer_list<Temp *> list) : temp_list_(list) {}
+  TempList(std::set<Temp *>::iterator begin, std::set<Temp *>::iterator end) : temp_list_(begin, end) {}
+  TempList(std::list<Temp *>::iterator begin, std::list<Temp *>::iterator end) : temp_list_(begin, end) {}
   TempList() = default;
   void Append(Temp *t) { temp_list_.push_back(t); }
   [[nodiscard]] Temp *NthTemp(int i) const;
-  [[nodiscard]] const std::list<Temp *> &GetList() const { return temp_list_; }
+  [[nodiscard]] std::list<Temp *> &GetList() { return temp_list_; }
+  [[nodiscard]] std::set<Temp *> *GetSet() const {
+    return new std::set<Temp *>(temp_list_.begin(), temp_list_.end());
+  }
 
 private:
   std::list<Temp *> temp_list_;

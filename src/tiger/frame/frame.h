@@ -74,7 +74,7 @@ public:
   
   virtual tree::Exp *toExp(tree::Exp *fp) const = 0;
   virtual ~Access() = default;
-  
+  virtual int GetOffset() { return 0; }
 };
 
 class Frame {

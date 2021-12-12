@@ -117,21 +117,21 @@ void MoveStm::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
         if (typeid(*(binop_exp->left_)) == typeid(tree::ConstExp)) {
           exp_val = static_cast<tree::ConstExp *>(binop_exp->right_)->Munch(instr_list, fs);
-          instr_str = "movq $" + std::to_string(src->consti_) + ", " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->left_)->consti_) + "(`d0)";
+          instr_str = "movq $" + std::to_string(src->consti_) + ", " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->left_)->consti_) + "(`s0)";
         } else {
           exp_val = static_cast<tree::ConstExp *>(binop_exp->left_)->Munch(instr_list, fs);
-          instr_str = "movq $" + std::to_string(src->consti_) + ", " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->right_)->consti_) + "(`d0)";
+          instr_str = "movq $" + std::to_string(src->consti_) + ", " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->right_)->consti_) + "(`s0)";
         }
 
         instr_list.Append(new assem::MoveInstr(
           instr_str,
-          new temp::TempList(exp_val), nullptr));
+          nullptr, new temp::TempList(exp_val)));
 
       } else {
         // move(const, mem)
         instr_list.Append(new assem::MoveInstr(
-          "movq $" + std::to_string(src->consti_) + ", (`d0)",
-          new temp::TempList(dst->exp_->Munch(instr_list, fs)), nullptr));
+          "movq $" + std::to_string(src->consti_) + ", (`s0)",
+          nullptr, new temp::TempList(dst->exp_->Munch(instr_list, fs))));
       }
       
     } else {
@@ -148,23 +148,21 @@ void MoveStm::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
         if (typeid(*(binop_exp->left_)) == typeid(tree::ConstExp)) {
           exp_val = static_cast<tree::ConstExp *>(binop_exp->right_)->Munch(instr_list, fs);
-          instr_str = "movq `s0, " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->left_)->consti_) + "(`d0)";
+          instr_str = "movq `s0, " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->left_)->consti_) + "(`s1)";
         } else {
           exp_val = static_cast<tree::ConstExp *>(binop_exp->left_)->Munch(instr_list, fs);
-          instr_str = "movq `s0, " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->right_)->consti_) + "(`d0)";
+          instr_str = "movq `s0, " + std::to_string(static_cast<tree::ConstExp *>(binop_exp->right_)->consti_) + "(`s1)";
         }
 
         instr_list.Append(new assem::MoveInstr(
           instr_str,
-          new temp::TempList(exp_val),
-          new temp::TempList(tmp)));
+          nullptr, new temp::TempList({ tmp, exp_val })));
 
       } else {
         // move(exp, mem)
         instr_list.Append(new assem::MoveInstr(
-          "movq `s0, (`d0)",
-          new temp::TempList(dst->exp_->Munch(instr_list, fs)),
-          new temp::TempList(tmp)));
+          "movq `s0, (`s1)",
+          nullptr, new temp::TempList({ tmp, dst->exp_->Munch(instr_list, fs) })));
       }
     }
   } else {
@@ -197,7 +195,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
       instr_list.Append(new assem::OperInstr(
         "addq $" + std::to_string(static_cast<tree::ConstExp *>(left_)->consti_) + ", `d0",
-        new temp::TempList(result), nullptr, nullptr));
+        new temp::TempList(result), new temp::TempList(result), nullptr));
 
     } else if (typeid(*right_) == typeid(tree::ConstExp)) {
       instr_list.Append(new assem::MoveInstr(
@@ -207,7 +205,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
       instr_list.Append(new assem::OperInstr(
         "addq $" + std::to_string(static_cast<tree::ConstExp *>(right_)->consti_) + ", `d0",
-        new temp::TempList(result), nullptr, nullptr));
+        new temp::TempList(result), new temp::TempList(result), nullptr));
 
     } else {
       instr_list.Append(new assem::MoveInstr(
@@ -218,7 +216,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
       instr_list.Append(new assem::OperInstr(
         "addq `s0, `d0",
         new temp::TempList(result),
-        new temp::TempList(right_->Munch(instr_list, fs)), nullptr));
+        new temp::TempList({ right_->Munch(instr_list, fs), result }), nullptr));
     }
     return result;
   
@@ -231,7 +229,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 
       instr_list.Append(new assem::OperInstr(
         "subq $" + std::to_string(static_cast<tree::ConstExp *>(right_)->consti_) + ", `d0",
-        new temp::TempList(result), nullptr, nullptr));
+        new temp::TempList(result), new temp::TempList(result), nullptr));
         
     } else {
       instr_list.Append(new assem::MoveInstr(
@@ -242,7 +240,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
       instr_list.Append(new assem::OperInstr(
         "subq `s0, `d0",
         new temp::TempList(result),
-        new temp::TempList(right_->Munch(instr_list, fs)), nullptr));
+        new temp::TempList({ right_->Munch(instr_list, fs), result }), nullptr));
     }
 
     return result;
@@ -256,7 +254,7 @@ temp::Temp *BinopExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     instr_list.Append(new assem::OperInstr(
       "imulq `s0",
       new temp::TempList({ x64_reg_manager->rdx, x64_reg_manager->rax }),
-      new temp::TempList(right_->Munch(instr_list, fs)), nullptr));
+      new temp::TempList({right_->Munch(instr_list, fs), x64_reg_manager->rax }), nullptr));
     
     instr_list.Append(new assem::MoveInstr(
       "movq `s0, `d0",
@@ -339,7 +337,9 @@ temp::Temp *TempExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
     std::string frame_size(fs.data(), fs.size());
     instr_list.Append(new assem::MoveInstr(
       "leaq " + frame_size + "(`s0), `d0",
-      new temp::TempList(result), new temp::TempList(reg_manager->StackPointer())));
+      new temp::TempList(result),
+      new temp::TempList(reg_manager->StackPointer())));
+      // nullptr));
       
     return result;
   } else {
@@ -374,11 +374,14 @@ temp::Temp *ConstExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
 temp::Temp *CallExp::Munch(assem::InstrList &instr_list, std::string_view fs) {
   /* TODO: Put your lab5 code here */
   temp::TempList *args = args_->MunchArgs(instr_list, staticlink_, fs);
+  args->Append(reg_manager->StackPointer());
   
   std::string name = static_cast<tree::NameExp *>(fun_)->name_->Name();
+  // temp::TempList *dst = new temp::TempList(reg_manager->CallerSaves()->GetList().begin(), reg_manager->CallerSaves()->GetList().end());
+  // dst->Append(reg_manager->ReturnValue());
   instr_list.Append(new assem::OperInstr(
     "call " + name,
-    reg_manager->CallerSaves(),
+    new temp::TempList(reg_manager->CallerSaves()->GetList().begin(), reg_manager->CallerSaves()->GetList().end()),
     args, nullptr));
   
   temp::Temp *result = temp::TempFactory::NewTemp();
@@ -396,9 +399,9 @@ temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, Exp *staticlink
   if (staticlink) {
     // handle staticlink
     instr_list.Append(new assem::MoveInstr(
-      "movq `s0, (`d0)", 
-      new temp::TempList(reg_manager->StackPointer()),
-      new temp::TempList(staticlink->Munch(instr_list, fs))));
+      "movq `s0, (`s1)", 
+      nullptr,
+      new temp::TempList({ staticlink->Munch(instr_list, fs), reg_manager->StackPointer() })));
   }
 
   std::list<temp::Temp *> arg_regs = reg_manager->ArgRegs()->GetList();
@@ -421,9 +424,9 @@ temp::TempList *ExpList::MunchArgs(assem::InstrList &instr_list, Exp *staticlink
       ++cur_reg;
     } else {
       instr_list.Append(new assem::MoveInstr(
-        "movq `s0, " + std::to_string(offset) + "(`d0)", 
-        new temp::TempList(reg_manager->StackPointer()),
-        new temp::TempList((*arg)->Munch(instr_list, fs))));
+        "movq `s0, " + std::to_string(offset) + "(`s1)", 
+        nullptr,
+        new temp::TempList({ (*arg)->Munch(instr_list, fs), reg_manager->StackPointer() })));
       ++arg;
       offset += word_size;
     }

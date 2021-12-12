@@ -14,6 +14,8 @@ public:
   virtual tree::Exp *toExp(tree::Exp *fp) const override {
     return new tree::MemExp(new tree::BinopExp(tree::PLUS_OP, fp, new tree::ConstExp(offset)));
   }
+
+  virtual int GetOffset() override { return offset; }
 };
 
 
@@ -89,7 +91,7 @@ temp::TempList *X64RegManager::ArgRegs() {
 
 temp::TempList *X64RegManager::CallerSaves() {
   static temp::TempList *caller_saved_regs = new temp::TempList({
-    r10, r11
+    rdi, rsi, rdx, rcx, r8, r9, r10, r11, rax
   });
   return caller_saved_regs;
 }
